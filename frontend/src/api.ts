@@ -19,6 +19,12 @@ export interface IntakeProfile {
   has_disability: boolean;
   pregnant: boolean;
   has_children_under_5: boolean;
+  is_student: boolean;
+  work_study: boolean;
+  cal_grant_a_or_b: boolean;
+  works_20_hours_week: boolean;
+  has_dependent_under_12: boolean;
+  meal_plan_count: number;
   ssn_last4: string;
   last_employer: string;
   separation_date: string;

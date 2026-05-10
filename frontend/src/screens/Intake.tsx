@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import VoiceInput from "../components/VoiceInput";
 import { IconSparkle } from "../components/icons";
 import type { IntakeProfile, Language } from "../api";
-import { loadRosaDemoData } from "../utils/enrollments";
+import { loadAlexDemoData, loadRosaDemoData } from "../utils/enrollments";
 
 interface Strings {
   questionN: (n: number, total: number) => string;
@@ -44,7 +44,19 @@ interface Props {
   onRosaDemoPrepared?: () => void;
 }
 
-const TOTAL = 8;
+type StepKey =
+  | "name"
+  | "dob"
+  | "student"
+  | "workStudy"
+  | "calGrant"
+  | "mealPlan"
+  | "location"
+  | "phone"
+  | "income"
+  | "household"
+  | "situation"
+  | "language";
 
 const DEMO: IntakeProfile = {
   full_name: "Rosa Martinez",
@@ -63,9 +75,44 @@ const DEMO: IntakeProfile = {
   has_disability: false,
   pregnant: false,
   has_children_under_5: false,
+  is_student: false,
+  work_study: false,
+  cal_grant_a_or_b: false,
+  works_20_hours_week: false,
+  has_dependent_under_12: false,
+  meal_plan_count: 0,
   ssn_last4: "4321",
   last_employer: "Sacramento Unified School District",
   separation_date: "2024-11-01",
+  language: "en",
+};
+
+const ALEX_DEMO: IntakeProfile = {
+  full_name: "Alex Chen",
+  date_of_birth: "2006-04-12",
+  address: "",
+  city: "Davis",
+  zip_code: "95616",
+  phone: "+15305261234",
+  monthly_income: 600,
+  household_size: 1,
+  age: 20,
+  recently_unemployed: false,
+  worked_last_18_months: false,
+  self_employed: false,
+  citizen_or_legal_resident: true,
+  has_disability: false,
+  pregnant: false,
+  has_children_under_5: false,
+  is_student: true,
+  work_study: true,
+  cal_grant_a_or_b: true,
+  works_20_hours_week: false,
+  has_dependent_under_12: false,
+  meal_plan_count: 0,
+  ssn_last4: "",
+  last_employer: "",
+  separation_date: "",
   language: "en",
 };
 
@@ -86,7 +133,42 @@ function digitsOnly(s: string): string {
 
 export default function Intake({ language, strings, onLanguageChange, onSubmit, loading, errorMessage, onRosaDemoPrepared }: Props) {
   const [step, setStep] = useState(0);
-  const [profile, setProfile] = useState<IntakeProfile>({ ...DEMO, full_name: "", date_of_birth: "", address: "", city: "", zip_code: "", phone: "", monthly_income: 0, household_size: 1, age: 0, recently_unemployed: false, worked_last_18_months: false, self_employed: false, citizen_or_legal_resident: false, has_disability: false, pregnant: false, has_children_under_5: false, ssn_last4: "", last_employer: "", separation_date: "", language });
+  const [profile, setProfile] = useState<IntakeProfile>({
+    ...DEMO,
+    full_name: "",
+    date_of_birth: "",
+    address: "",
+    city: "",
+    zip_code: "",
+    phone: "",
+    monthly_income: 0,
+    household_size: 1,
+    age: 0,
+    recently_unemployed: false,
+    worked_last_18_months: false,
+    self_employed: false,
+    citizen_or_legal_resident: false,
+    has_disability: false,
+    pregnant: false,
+    has_children_under_5: false,
+    is_student: false,
+    work_study: false,
+    cal_grant_a_or_b: false,
+    works_20_hours_week: false,
+    has_dependent_under_12: false,
+    meal_plan_count: 0,
+    ssn_last4: "",
+    last_employer: "",
+    separation_date: "",
+    language,
+  });
+
+  const steps: StepKey[] = useMemo(() => {
+    const base: StepKey[] = ["name", "dob", "student"];
+    if (profile.is_student) base.push("workStudy", "calGrant", "mealPlan");
+    base.push("location", "phone", "income", "household", "situation", "language");
+    return base;
+  }, [profile.is_student]);
 
   const update = <K extends keyof IntakeProfile>(key: K, value: IntakeProfile[K]) => {
     setProfile((p) => ({ ...p, [key]: value }));
@@ -95,27 +177,39 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
   const loadDemo = () => {
     loadRosaDemoData();
     setProfile({ ...DEMO, language });
-    setStep(TOTAL - 1);
+    setStep(Math.max(0, steps.length - 1));
+    onRosaDemoPrepared?.();
+  };
+
+  const loadStudentDemo = () => {
+    loadAlexDemoData();
+    setProfile({ ...ALEX_DEMO, language });
+    setStep(Math.max(0, steps.length - 1));
     onRosaDemoPrepared?.();
   };
 
   const isValid = useMemo(() => {
-    switch (step) {
-      case 0: return profile.full_name.trim().length > 1;
-      case 1: return !!profile.date_of_birth;
-      case 2: return profile.city.trim().length > 0 && /^\d{5}$/.test(profile.zip_code);
-      case 3: return digitsOnly(profile.phone).length >= 10;
-      case 4: return profile.monthly_income >= 0 && !Number.isNaN(profile.monthly_income);
-      case 5: return profile.household_size >= 1;
-      case 6: return true; // checkboxes always allowed
-      case 7: return language === "en" || language === "es";
+    const k = steps[step];
+    switch (k) {
+      case "name": return profile.full_name.trim().length > 1;
+      case "dob": return !!profile.date_of_birth;
+      case "student": return typeof profile.is_student === "boolean";
+      case "workStudy": return typeof profile.work_study === "boolean";
+      case "calGrant": return typeof profile.cal_grant_a_or_b === "boolean";
+      case "mealPlan": return profile.meal_plan_count >= 0;
+      case "location": return profile.city.trim().length > 0 && /^\d{5}$/.test(profile.zip_code);
+      case "phone": return digitsOnly(profile.phone).length >= 10;
+      case "income": return profile.monthly_income >= 0 && !Number.isNaN(profile.monthly_income);
+      case "household": return profile.household_size >= 1;
+      case "situation": return true;
+      case "language": return language === "en" || language === "es";
       default: return false;
     }
-  }, [step, profile, language]);
+  }, [step, profile, language, steps]);
 
   const goNext = () => {
     if (!isValid) return;
-    if (step === TOTAL - 1) {
+    if (step === steps.length - 1) {
       const finalProfile: IntakeProfile = {
         ...profile,
         language,
@@ -128,11 +222,12 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
   };
   const goBack = () => setStep(Math.max(0, step - 1));
 
-  const progressPct = ((step + 1) / TOTAL) * 100;
+  const progressPct = ((step + 1) / steps.length) * 100;
 
   const renderStep = () => {
-    switch (step) {
-      case 0:
+    const k = steps[step];
+    switch (k) {
+      case "name":
         return (
           <div className="bb-field">
             <label className="bb-label">{strings.q.nameTitle}</label>
@@ -147,13 +242,13 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
               />
               <VoiceInput
                 language={language}
-                ariaLabel="Speak your name"
+                ariaLabel={language === "es" ? "Di tu nombre" : "Speak your name"}
                 onTranscript={(t) => update("full_name", t)}
               />
             </div>
           </div>
         );
-      case 1:
+      case "dob":
         return (
           <div className="bb-field">
             <label className="bb-label">{strings.q.dobTitle}</label>
@@ -165,7 +260,115 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
             />
           </div>
         );
-      case 2:
+      case "student":
+        return (
+          <div>
+            <label className="bb-label">
+              {language === "es" ? "¿Eres estudiante al menos medio tiempo?" : "Are you a student enrolled at least half-time?"}
+            </label>
+            <div className="bb-row">
+              <button
+                type="button"
+                className={profile.is_student ? "bb-btn bb-btn-block" : "bb-btn bb-btn-secondary bb-btn-block"}
+                onClick={() => update("is_student", true)}
+              >
+                {language === "es" ? "Sí" : "Yes"}
+              </button>
+              <button
+                type="button"
+                className={!profile.is_student ? "bb-btn bb-btn-block" : "bb-btn bb-btn-secondary bb-btn-block"}
+                onClick={() => update("is_student", false)}
+              >
+                {language === "es" ? "No" : "No"}
+              </button>
+            </div>
+          </div>
+        );
+      case "workStudy":
+        return (
+          <div>
+            <label className="bb-label">
+              {language === "es" ? "¿Eres elegible para Work-Study?" : "Are you eligible for Work-Study?"}
+            </label>
+            <div className="bb-row">
+              <button
+                type="button"
+                className={profile.work_study ? "bb-btn bb-btn-block" : "bb-btn bb-btn-secondary bb-btn-block"}
+                onClick={() => update("work_study", true)}
+              >
+                {language === "es" ? "Sí" : "Yes"}
+              </button>
+              <button
+                type="button"
+                className={!profile.work_study ? "bb-btn bb-btn-block" : "bb-btn bb-btn-secondary bb-btn-block"}
+                onClick={() => update("work_study", false)}
+              >
+                {language === "es" ? "No" : "No"}
+              </button>
+            </div>
+          </div>
+        );
+      case "calGrant":
+        return (
+          <div>
+            <label className="bb-label">
+              {language === "es" ? "¿Recibes una Cal Grant A o B?" : "Do you receive a Cal Grant A or B?"}
+            </label>
+            <div className="bb-row">
+              <button
+                type="button"
+                className={profile.cal_grant_a_or_b ? "bb-btn bb-btn-block" : "bb-btn bb-btn-secondary bb-btn-block"}
+                onClick={() => update("cal_grant_a_or_b", true)}
+              >
+                {language === "es" ? "Sí" : "Yes"}
+              </button>
+              <button
+                type="button"
+                className={!profile.cal_grant_a_or_b ? "bb-btn bb-btn-block" : "bb-btn bb-btn-secondary bb-btn-block"}
+                onClick={() => update("cal_grant_a_or_b", false)}
+              >
+                {language === "es" ? "No" : "No"}
+              </button>
+            </div>
+          </div>
+        );
+      case "mealPlan":
+        return (
+          <div className="bb-field">
+            <label className="bb-label">
+              {language === "es"
+                ? "¿Cuántas comidas por semana incluye tu plan de comidas?"
+                : "Do you have a meal plan with 11 or more meals per week?"}
+            </label>
+            <span className="bb-help">
+              {language === "es"
+                ? "Ingresa comidas por semana (0 si no tienes plan). 11+ puede descalificar para CalFresh."
+                : "Enter meals per week (0 if none). 11+ can disqualify CalFresh."}
+            </span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                className="bb-input"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={profile.meal_plan_count === 0 ? "" : profile.meal_plan_count}
+                onChange={(e) => {
+                  const v = e.target.value === "" ? 0 : Number(e.target.value);
+                  update("meal_plan_count", Number.isNaN(v) ? 0 : Math.max(0, Math.floor(v)));
+                }}
+              />
+              <VoiceInput
+                language={language}
+                ariaLabel={language === "es" ? "Di tus comidas por semana" : "Speak meals per week"}
+                onTranscript={(t) => {
+                  const n = Number(digitsOnly(t));
+                  update("meal_plan_count", Number.isNaN(n) ? 0 : Math.max(0, Math.floor(n)));
+                }}
+              />
+            </div>
+          </div>
+        );
+      case "location":
         return (
           <div>
             <label className="bb-label">{strings.q.locationTitle}</label>
@@ -189,7 +392,7 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
             </div>
           </div>
         );
-      case 3:
+      case "phone":
         return (
           <div className="bb-field">
             <label className="bb-label">{strings.q.phoneTitle}</label>
@@ -203,13 +406,13 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
               />
               <VoiceInput
                 language={language}
-                ariaLabel="Speak your phone number"
+                ariaLabel={language === "es" ? "Di tu número de teléfono" : "Speak your phone number"}
                 onTranscript={(t) => update("phone", "+1" + digitsOnly(t).slice(-10))}
               />
             </div>
           </div>
         );
-      case 4:
+      case "income":
         return (
           <div className="bb-field">
             <label className="bb-label">{strings.q.incomeTitle}</label>
@@ -229,7 +432,7 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
               />
               <VoiceInput
                 language={language}
-                ariaLabel="Speak your income"
+                ariaLabel={language === "es" ? "Di tu ingreso mensual" : "Speak your income"}
                 onTranscript={(t) => {
                   const n = Number(digitsOnly(t));
                   update("monthly_income", Number.isNaN(n) ? 0 : n);
@@ -238,7 +441,7 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
             </div>
           </div>
         );
-      case 5:
+      case "household":
         return (
           <div className="bb-field">
             <label className="bb-label">{strings.q.householdTitle}</label>
@@ -250,7 +453,7 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
             </div>
           </div>
         );
-      case 6:
+      case "situation":
         return (
           <div>
             <label className="bb-label">{strings.q.situationTitle}</label>
@@ -287,7 +490,7 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
             </div>
           </div>
         );
-      case 7:
+      case "language":
         return (
           <div>
             <label className="bb-label">{strings.q.languageTitle}</label>
@@ -321,7 +524,7 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
         <div className="bb-progress-track">
           <div className="bb-progress-fill" style={{ width: `${progressPct}%` }} />
         </div>
-        <div className="bb-progress-label">{strings.questionN(step + 1, TOTAL)}</div>
+        <div className="bb-progress-label">{strings.questionN(step + 1, steps.length)}</div>
       </div>
 
       <div className="bb-card">
@@ -346,22 +549,26 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
             onClick={goNext}
             disabled={!isValid || loading}
           >
-            {loading ? "…" : step === TOTAL - 1 ? strings.findBenefits : strings.next}
+            {loading ? "…" : step === steps.length - 1 ? strings.findBenefits : strings.next}
           </button>
         </div>
       </div>
 
       <div style={{ textAlign: "center", marginTop: 18 }}>
-        <button
-          type="button"
-          className="bb-btn bb-btn-ghost"
-          onClick={loadDemo}
-        >
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <IconSparkle size={16} />
-            {strings.loadDemo}
-          </span>
-        </button>
+        <div style={{ display: "flex", justifyContent: "center", gap: 10, flexWrap: "wrap" }}>
+          <button type="button" className="bb-btn bb-btn-ghost" onClick={loadDemo}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <IconSparkle size={16} />
+              {strings.loadDemo}
+            </span>
+          </button>
+          <button type="button" className="bb-btn bb-btn-ghost" onClick={loadStudentDemo}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <IconSparkle size={16} />
+              {language === "es" ? "Cargar demo de estudiante (Alex)" : "Load Student Demo (Alex)"}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div className="bb-disclaimer">{strings.privacyNote}</div>

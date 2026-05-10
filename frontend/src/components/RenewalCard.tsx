@@ -95,6 +95,9 @@ export default function RenewalCard({
       : RENEWAL_DOCS[enrollment.program_name] || [];
 
   const estReceived = useMemo(() => accumulatedValueForEnrollment(enrollment), [enrollment]);
+  const valueLine = enrollment.one_time_value
+    ? `$${enrollment.one_time_value.toLocaleString()} grant`
+    : `$${enrollment.monthly_value}/month`;
 
   const handleToggle = async () => {
     const next = !enrollment.reminder_set;
@@ -118,7 +121,7 @@ export default function RenewalCard({
             <span className={`bb-renewal-badge bb-renewal-badge-${urgency}`}>{badge}</span>
           </div>
           <div style={{ color: "var(--bb-text-soft)", marginTop: 4 }}>
-            <span style={{ color: "var(--bb-green)", fontWeight: 700 }}>${enrollment.monthly_value}/month</span>
+            <span style={{ color: "var(--bb-green)", fontWeight: 700 }}>{valueLine}</span>
             <span style={{ marginLeft: 10 }}>· Est. received: ${estReceived.toLocaleString()}</span>
           </div>
         </div>

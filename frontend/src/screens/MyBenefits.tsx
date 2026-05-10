@@ -10,6 +10,7 @@ import {
   daysUntilRenewal,
   getEnrollments,
   getMonthsTracked,
+  loadAlexDemoData,
   loadRosaDemoData,
   updateEnrollment,
   type Enrollment,
@@ -78,6 +79,22 @@ export default function MyBenefits({
     showToast(language === "es" ? "Datos demo de Rosa cargados" : "Loaded Rosa demo history");
   };
 
+  const handleLoadAlexDemo = () => {
+    loadAlexDemoData();
+    setEnrollments(getEnrollments());
+    showToast(language === "es" ? "Datos demo de Alex cargados" : "Loaded Alex demo history");
+  };
+
+  const demoMode = useMemo<"rosa" | "alex" | "other">(() => {
+    const hasRosa = enrollments.some((e) => e.phone === "+15304441234" || e.enrolled_date === "2025-01-15");
+    if (hasRosa) return "rosa";
+    const hasAlex = enrollments.some((e) => e.phone === "+15305261234" || e.enrolled_date === "2025-09-01");
+    if (hasAlex) return "alex";
+    return "other";
+  }, [enrollments]);
+
+  const firstName = demoMode === "rosa" ? "Rosa" : demoMode === "alex" ? "Alex" : "You";
+
   const handleClear = () => {
     clearEnrollments();
     setEnrollments([]);
@@ -115,12 +132,27 @@ export default function MyBenefits({
   return (
     <div className="bb-container">
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
-        <button type="button" className="bb-btn bb-btn-secondary" onClick={handleLoadRosaDemo}>
-          {language === "es" ? "Demo: cargar historial de Rosa" : "Demo: Load Rosa's History"}
+        <button
+          type="button"
+          className="bb-btn bb-btn-secondary bb-btn-sm"
+          onClick={() => {
+            if (demoMode === "rosa") return handleLoadAlexDemo();
+            return handleLoadRosaDemo();
+          }}
+        >
+          {demoMode === "alex"
+            ? (language === "es" ? "Demo: historial de Alex" : "Demo: Alex's History")
+            : (language === "es" ? "Demo: historial de Rosa" : "Demo: Rosa's History")}
         </button>
       </div>
 
-      <TotalSavedHero key={`${refreshToken}-${totalSaved}`} total={totalSaved} programCount={programCount} monthsTracked={monthsTracked} />
+      <TotalSavedHero
+        key={`${refreshToken}-${totalSaved}`}
+        total={totalSaved}
+        programCount={programCount}
+        monthsTracked={monthsTracked}
+        firstName={firstName}
+      />
 
       <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
         {sortedByUrgency.map((e) => (

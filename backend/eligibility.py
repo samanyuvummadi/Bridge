@@ -69,8 +69,26 @@ def _renewal_date(months: int) -> str:
 # ---------------------------------------------------------------------------
 
 def _check_calfresh(p: Dict[str, Any]) -> bool:
+    # Disqualifier: large meal plans can make students ineligible even with exemptions.
+    # (We treat meal_plan_count as meals/week; 11+ means most meals are provided.)
+    if p.get("meal_plan_count", 0) >= 11:
+        return False
+
     limit = _income_limit(CALFRESH_INCOME_LIMITS, p.get("household_size", 1))
-    return p.get("monthly_income", 0) <= limit and p.get("citizen_or_legal_resident", False)
+    if not (p.get("monthly_income", 0) <= limit and p.get("citizen_or_legal_resident", False)):
+        return False
+
+    # Student rule: students 18–49 need an exemption.
+    age = p.get("age", 0) or 0
+    if 18 <= age <= 49 and p.get("is_student", False):
+        return any([
+            p.get("work_study", False),
+            p.get("cal_grant_a_or_b", False),
+            p.get("works_20_hours_week", False),
+            p.get("has_dependent_under_12", False),
+        ])
+
+    return True
 
 
 def _prefill_calfresh(p: Dict[str, Any]) -> Dict[str, str]:

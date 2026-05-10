@@ -4,10 +4,12 @@ export default function TotalSavedHero({
   total,
   programCount,
   monthsTracked,
+  firstName,
 }: {
   total: number;
   programCount: number;
   monthsTracked: number;
+  firstName: string;
 }) {
   const [displayValue, setDisplayValue] = useState(0);
   const [counting, setCounting] = useState(false);
@@ -37,7 +39,9 @@ export default function TotalSavedHero({
   return (
     <div className="bb-total-hero">
       <div style={{ textAlign: "center" }}>
-        <div className="bb-total-hero-kicker">TOTAL BENEFITS RECEIVED</div>
+        <div className="bb-total-hero-kicker">
+          {firstName ? `${firstName}, you have received` : "You have received"}
+        </div>
         <div className={`bb-total-hero-amount ${counting ? "bb-total-hero-shimmer" : ""}`}>
           <span className="bb-total-hero-amount-text">{formatted}</span>
         </div>

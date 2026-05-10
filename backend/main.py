@@ -57,6 +57,12 @@ class IntakeProfile(BaseModel):
     has_disability: bool = False
     pregnant: bool = False
     has_children_under_5: bool = False
+    is_student: bool = False
+    work_study: bool = False
+    cal_grant_a_or_b: bool = False
+    works_20_hours_week: bool = False
+    has_dependent_under_12: bool = False
+    meal_plan_count: int = 0
     ssn_last4: str = ""
     last_employer: str = ""
     separation_date: str = ""
