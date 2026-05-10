@@ -17,7 +17,7 @@ export default function Landing({
         localizedB: "Creado específicamente para residentes de Sacramento y el condado de Yolo.",
         start: "Comenzar mi evaluación",
         demoTitle: "Perfiles de demostración",
-        demoRosa: "Conoce a Rosa (adulta mayor en Woodland)",
+        demoRosa: "Rosa (adulta mayor en Woodland)",
       }
     : {
         title: "Welcome to BenefitBridge",
@@ -26,7 +26,7 @@ export default function Landing({
         localizedB: "Built specifically for Sacramento & Yolo County residents.",
         start: "Start My Assessment",
         demoTitle: "Demo Profiles",
-        demoRosa: "Meet Rosa (Senior in Woodland)",
+        demoRosa: "Rosa (Senior in Woodland)",
       };
 
   return (
