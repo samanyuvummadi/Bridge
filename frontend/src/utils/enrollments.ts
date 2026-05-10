@@ -14,6 +14,17 @@ export interface Enrollment {
 }
 
 const STORAGE_KEY = "benefitbridge_enrollments";
+const SOURCE_KEY = "benefitbridge_enrollments_source";
+type EnrollmentSource = "user" | "demo";
+
+function setSource(source: EnrollmentSource): void {
+  localStorage.setItem(SOURCE_KEY, source);
+}
+
+export function getEnrollmentSource(): EnrollmentSource | null {
+  const raw = localStorage.getItem(SOURCE_KEY);
+  return raw === "user" || raw === "demo" ? raw : null;
+}
 
 function safeParseJson<T>(raw: string | null): T | null {
   if (!raw) return null;
@@ -70,6 +81,7 @@ export function getEnrollments(): Enrollment[] {
 }
 
 export function addEnrollment(enrollment: Enrollment): void {
+  setSource("user");
   const current = getEnrollments();
   const next = [
     enrollment,
@@ -86,6 +98,7 @@ export function updateEnrollment(programName: string, updates: Partial<Enrollmen
 
 export function clearEnrollments(): void {
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SOURCE_KEY);
 }
 
 // Calculate days until renewal (negative = overdue)
@@ -140,6 +153,7 @@ export function getUrgency(daysRemaining: number): "safe" | "soon" | "urgent" | 
  */
 export function loadRosaDemoData(): void {
   clearEnrollments();
+  setSource("demo");
   const phone = "+15304441234";
   const list: Enrollment[] = [
     {
@@ -172,46 +186,6 @@ export function loadRosaDemoData(): void {
       phone,
       language: "en",
       status: "expired",
-    },
-  ];
-  writeEnrollments(list);
-}
-
-/** Demo Mode — Alex (student-first): mix of monthly benefits + one-time scholarship. */
-export function loadAlexDemoData(): void {
-  clearEnrollments();
-  const phone = "+15305261234";
-  const list: Enrollment[] = [
-    {
-      program_name: "CalFresh",
-      enrolled_date: "2025-09-01",
-      renewal_date: "2026-09-01",
-      monthly_value: 291,
-      reminder_set: false,
-      phone,
-      language: "en",
-      status: "active",
-    },
-    {
-      program_name: "Middle Class Scholarship",
-      enrolled_date: "2025-09-01",
-      renewal_date: isoDateFromParts(2030, 9, 1),
-      monthly_value: 0,
-      one_time_value: 2500,
-      reminder_set: false,
-      phone,
-      language: "en",
-      status: "active",
-    },
-    {
-      program_name: "Medi-Cal",
-      enrolled_date: "2025-09-01",
-      renewal_date: "2026-09-01",
-      monthly_value: 200,
-      reminder_set: false,
-      phone,
-      language: "en",
-      status: "active",
     },
   ];
   writeEnrollments(list);

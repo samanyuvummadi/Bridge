@@ -20,6 +20,7 @@ interface Props {
   strings: Strings;
   onPreFill: () => void;
   onSetReminder: () => void;
+  onOpen: () => void;
   delayIndex: number;
 }
 
@@ -35,6 +36,7 @@ export default function ProgramCard({
   strings,
   onPreFill,
   onSetReminder,
+  onOpen,
   delayIndex,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
@@ -55,6 +57,12 @@ export default function ProgramCard({
     <div
       className="bb-card bb-rise"
       style={{ animationDelay: `${delayIndex * 90}ms` }}
+      role="button"
+      tabIndex={0}
+      onClick={onOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onOpen();
+      }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
         <div>
@@ -79,21 +87,21 @@ export default function ProgramCard({
         <button
           type="button"
           className="bb-btn bb-btn-ghost"
-          onClick={() => setExpanded((v) => !v)}
+          onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
         >
           {expanded ? strings.hide : strings.learnMore}
         </button>
         <button
           type="button"
           className="bb-btn bb-btn-secondary"
-          onClick={onSetReminder}
+          onClick={(e) => { e.stopPropagation(); onSetReminder(); }}
         >
           {strings.remind}
         </button>
         <button
           type="button"
           className="bb-btn"
-          onClick={onPreFill}
+          onClick={(e) => { e.stopPropagation(); onPreFill(); }}
         >
           {strings.prefill}
         </button>

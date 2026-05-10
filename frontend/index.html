@@ -158,6 +158,27 @@
         margin-bottom: 16px;
       }
 
+      /* Guided discovery selection cards */
+      .bb-select-grid { display: grid; gap: 10px; }
+      .bb-select-card {
+        width: 100%;
+        text-align: left;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 14px 14px;
+        border-radius: 12px;
+        border: 1.5px solid var(--bb-border);
+        background: white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        transition: background 0.2s ease, border-color 0.2s ease;
+      }
+      .bb-select-card:hover { background: rgba(27,67,50,0.04); }
+      .bb-select-card-selected { border: 2px solid #1B4332; background: rgba(27,67,50,0.05); }
+      .bb-select-card-icon { color: #1B4332; margin-top: 1px; }
+      .bb-select-card-title { font-weight: 800; }
+      .bb-select-card-desc { color: var(--bb-text-soft); font-size: 0.92rem; margin-top: 2px; }
+
       /* Progress */
       .bb-progress-track {
         height: 6px;
@@ -267,7 +288,7 @@
       .bb-total-hero {
         background: #1B4332;
         border-radius: var(--bb-radius);
-        padding: 22px 18px;
+        padding: 18px 18px;
         color: rgba(255,255,255,0.92);
         box-shadow: var(--bb-shadow);
         border: 1px solid rgba(255,255,255,0.08);
@@ -275,11 +296,11 @@
       .bb-total-hero-kicker {
         font-weight: 800;
         letter-spacing: 0.14em;
-        font-size: 0.75rem;
+        font-size: 1.25rem;
         color: rgba(255,255,255,0.72);
       }
       .bb-total-hero-amount {
-        margin-top: 10px;
+        margin-top: 6px;
         font-family: "DM Serif Display", Georgia, serif;
         font-size: clamp(48px, 8vw, 72px);
         font-weight: 700;
@@ -304,9 +325,9 @@
         100% { transform: translateX(120%); }
       }
       .bb-total-hero-sub {
-        margin-top: 8px;
+        margin-top: 4px;
         color: rgba(255,255,255,0.7);
-        font-size: 0.95rem;
+        font-size: 1.2rem;
       }
 
       /* Renewal cards */
@@ -426,6 +447,76 @@
         padding: 24px;
         max-height: 90vh;
         overflow-y: auto;
+      }
+
+      /* Support modal quote block */
+      .bb-support-quote {
+        border: 1px solid rgba(27,67,50,0.18);
+        background: rgba(27,67,50,0.05);
+        border-radius: 14px;
+        padding: 14px 14px;
+        position: relative;
+      }
+      .bb-support-quote::before {
+        content: "";
+        position: absolute;
+        left: 18px;
+        top: -8px;
+        width: 14px;
+        height: 14px;
+        background: rgba(27,67,50,0.05);
+        border-left: 1px solid rgba(27,67,50,0.18);
+        border-top: 1px solid rgba(27,67,50,0.18);
+        transform: rotate(45deg);
+      }
+      .bb-support-quote-label {
+        font-weight: 900;
+        font-size: 0.75rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(27,67,50,0.75);
+        margin-bottom: 6px;
+      }
+
+      /* Results support FAB */
+      .bb-support-fab {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        height: 52px;
+        width: 52px;
+        border-radius: 999px;
+        border: none;
+        background: #1B4332;
+        color: white;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        padding: 0;
+        overflow: hidden;
+        transition: width 0.2s ease, filter 0.2s ease;
+        z-index: 80;
+        flex-direction: column;
+      }
+      .bb-support-fab-icon { display: grid; place-items: center; line-height: 0; }
+      .bb-support-fab:hover { filter: brightness(1.03); width: 250px; justify-content: flex-start; flex-direction: row; padding: 0 16px; gap: 10px; }
+      .bb-support-fab:focus-visible { width: 250px; justify-content: flex-start; flex-direction: row; padding: 0 16px; gap: 10px; }
+      .bb-support-fab-label {
+        white-space: nowrap;
+        display: none;
+        font-weight: 800;
+      }
+      .bb-support-fab:hover .bb-support-fab-label,
+      .bb-support-fab:focus-visible .bb-support-fab-label {
+        display: inline;
+      }
+
+      /* On touch devices (no hover), keep label visible */
+      @media (hover: none) {
+        .bb-support-fab { width: 250px; justify-content: flex-start; flex-direction: row; padding: 0 16px; }
+        .bb-support-fab-label { display: inline; }
       }
 
       /* Prefilled value highlight */

@@ -59,6 +59,25 @@ def _full_address(profile: Dict[str, Any]) -> str:
     parts = [profile.get("address", ""), profile.get("city", ""), "CA", profile.get("zip_code", "")]
     return ", ".join([p for p in parts if p]).replace(", CA,", " CA")
 
+def _norm_city(p: Dict[str, Any]) -> str:
+    return (p.get("city", "") or "").strip().lower()
+
+def _zip_prefix(p: Dict[str, Any], n: int = 3) -> str:
+    z = (p.get("zip_code", "") or "").strip()
+    return z[:n]
+
+def _income_under_percent_fpl(p: Dict[str, Any], percent: int) -> bool:
+    """
+    Approximate percent-of-FPL checks using the CalFresh gross monthly table
+    as the baseline tier, then scaling linearly.
+
+    This is hackathon-grade (good enough for screening UX) and is not an official determination.
+    """
+    hh = p.get("household_size", 1)
+    baseline = _income_limit(CALFRESH_INCOME_LIMITS, hh)  # ~CalFresh gross tiers (close to 130–200% FPL by household)
+    scaled = int(baseline * (percent / 130.0))
+    return p.get("monthly_income", 0) <= scaled
+
 
 def _renewal_date(months: int) -> str:
     return (datetime.utcnow() + timedelta(days=months * 30)).strftime("%Y-%m-%d")
@@ -196,6 +215,160 @@ def _prefill_wic(p: Dict[str, Any]) -> Dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
+# Essential services + CalWORKs (lightweight hackathon heuristics)
+# ---------------------------------------------------------------------------
+
+def _check_calworks(p: Dict[str, Any]) -> bool:
+    # CalWORKs generally requires children in the home and very low income.
+    # We approximate this with "has_children_under_5 OR household_size > 1".
+    if not (p.get("has_children_under_5", False) or p.get("household_size", 1) > 1):
+        return False
+    limit = _income_limit(CALFRESH_INCOME_LIMITS, p.get("household_size", 1))
+    return p.get("monthly_income", 0) <= limit and p.get("citizen_or_legal_resident", False)
+
+
+def _prefill_calworks(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Date of Birth": _fmt_date(p.get("date_of_birth", "")),
+        "Street Address": p.get("address", ""),
+        "City": p.get("city", ""),
+        "ZIP": p.get("zip_code", ""),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Household Size": str(p.get("household_size", 1)),
+        "Monthly Income": f"${p.get('monthly_income', 0)}",
+    }
+
+
+def _check_internet_subsidy(p: Dict[str, Any]) -> bool:
+    # A generic low-income internet discount screening.
+    limit = _income_limit(CALFRESH_INCOME_LIMITS, p.get("household_size", 1))
+    return p.get("monthly_income", 0) <= limit * 1.2
+
+
+def _prefill_internet_subsidy(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Service Address": _full_address(p),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Household Size": str(p.get("household_size", 1)),
+        "Monthly Income": f"${p.get('monthly_income', 0)}",
+    }
+
+
+def _check_smud_energyhelp(p: Dict[str, Any]) -> bool:
+    return _zip_prefix(p) == "958" and _income_under_percent_fpl(p, 200)
+
+
+def _prefill_smud_energyhelp(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Service Address": _full_address(p),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Household Size": str(p.get("household_size", 1)),
+        "Monthly Income": f"${p.get('monthly_income', 0)}",
+    }
+
+
+def _check_pge_care_fera(p: Dict[str, Any]) -> bool:
+    return _zip_prefix(p) in ("956", "957") and _income_under_percent_fpl(p, 200)
+
+
+def _prefill_pge_care_fera(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Service Address": _full_address(p),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Household Size": str(p.get("household_size", 1)),
+        "Monthly Income": f"${p.get('monthly_income', 0)}",
+    }
+
+
+def _check_utility_discounts(p: Dict[str, Any]) -> bool:
+    # A generic utility discount screening for low-income households.
+    limit = _income_limit(CALFRESH_INCOME_LIMITS, p.get("household_size", 1))
+    return p.get("monthly_income", 0) <= limit * 1.2
+
+
+def _prefill_utility_discounts(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Service Address": _full_address(p),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Household Size": str(p.get("household_size", 1)),
+        "Monthly Income": f"${p.get('monthly_income', 0)}",
+    }
+
+
+def _check_transit_fare_reduction(p: Dict[str, Any]) -> bool:
+    # Transit discounts are typically available to low-income riders and/or seniors.
+    # We approximate with low income OR age >= 65.
+    limit = _income_limit(CALFRESH_INCOME_LIMITS, p.get("household_size", 1))
+    return p.get("monthly_income", 0) <= limit * 1.2 or p.get("age", 0) >= 65
+
+
+def _prefill_transit_fare_reduction(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Date of Birth": _fmt_date(p.get("date_of_birth", "")),
+        "City": p.get("city", ""),
+        "ZIP": p.get("zip_code", ""),
+        "Phone": _fmt_phone(p.get("phone", "")),
+    }
+
+
+def _check_sacrt_discount(p: Dict[str, Any]) -> bool:
+    city = _norm_city(p)
+    if city != "sacramento":
+        return False
+    return bool(p.get("is_student", False)) or _income_under_percent_fpl(p, 150)
+
+
+def _prefill_sacrt_discount(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Date of Birth": _fmt_date(p.get("date_of_birth", "")),
+        "City": p.get("city", ""),
+        "ZIP": p.get("zip_code", ""),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Student Status": "Yes" if p.get("is_student", False) else "No",
+    }
+
+
+def _check_yolobus_discount(p: Dict[str, Any]) -> bool:
+    city = _norm_city(p)
+    if city not in ("davis", "woodland"):
+        return False
+    return bool(p.get("is_student", False)) or _income_under_percent_fpl(p, 150)
+
+
+def _prefill_yolobus_discount(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Date of Birth": _fmt_date(p.get("date_of_birth", "")),
+        "City": p.get("city", ""),
+        "ZIP": p.get("zip_code", ""),
+        "Phone": _fmt_phone(p.get("phone", "")),
+        "Student Status": "Yes" if p.get("is_student", False) else "No",
+    }
+
+
+def _check_library_of_things(p: Dict[str, Any]) -> bool:
+    # Auto-match for local residents (Sacramento + Yolo corridor by common prefixes/cities).
+    zp = _zip_prefix(p)
+    city = _norm_city(p)
+    return zp in ("958", "956", "957") or city in ("sacramento", "davis", "woodland")
+
+
+def _prefill_library_of_things(p: Dict[str, Any]) -> Dict[str, str]:
+    return {
+        "Applicant Name": p.get("full_name", ""),
+        "Home Address": _full_address(p),
+        "Phone": _fmt_phone(p.get("phone", "")),
+    }
+
+
+# ---------------------------------------------------------------------------
 # Program registry
 # ---------------------------------------------------------------------------
 
@@ -292,6 +465,108 @@ PROGRAMS: List[Dict[str, Any]] = [
         ],
         "check": _check_wic,
         "prefill": _prefill_wic,
+    },
+    {
+        "name": "CalWORKs",
+        "description": "Cash aid and supportive services for families with children in California.",
+        "form": "CalWORKs Application",
+        "agency": "California Department of Social Services",
+        "apply_url": "https://www.cdss.ca.gov/calworks",
+        "renewal_months": 12,
+        "monthly_value_estimate": "$300-$900/month cash support (varies)",
+        "monthly_value_low": 300,
+        "documents": [
+            "Photo ID",
+            "Proof of address",
+            "Proof of income (last 30 days)",
+            "Proof of children in the household",
+        ],
+        "check": _check_calworks,
+        "prefill": _prefill_calworks,
+    },
+    {
+        "name": "SMUD EnergyHELP",
+        "description": "This utility discount is applied directly to your SMUD bill if your household meets income guidelines.",
+        "form": "SMUD EnergyHELP Application",
+        "agency": "Sacramento Municipal Utility District (SMUD)",
+        "apply_url": "https://www.smud.org/en/Customer-Support/Financial-assistance/Energy-assistance",
+        "renewal_months": 12,
+        "monthly_value_estimate": "Estimated $40/month bill reduction",
+        "monthly_value_low": 40,
+        "documents": [
+            "Recent SMUD bill (or account number)",
+            "Proof of income (last 30 days)",
+            "Proof of address",
+        ],
+        "check": _check_smud_energyhelp,
+        "prefill": _prefill_smud_energyhelp,
+    },
+    {
+        "name": "PG&E CARE/FERA",
+        "description": "This discount is applied to your PG&E electric/gas bill through CARE/FERA if you meet income guidelines.",
+        "form": "PG&E CARE/FERA Enrollment",
+        "agency": "Pacific Gas & Electric (PG&E)",
+        "apply_url": "https://www.pge.com/en/account/billing-and-assistance/financial-assistance/care-fera.html",
+        "renewal_months": 12,
+        "monthly_value_estimate": "Estimated $40/month bill reduction",
+        "monthly_value_low": 40,
+        "documents": [
+            "Recent PG&E bill (or account number)",
+            "Proof of income (last 30 days)",
+            "Proof of address",
+        ],
+        "check": _check_pge_care_fera,
+        "prefill": _prefill_pge_care_fera,
+    },
+    {
+        "name": "SacRT RydeFree (Student) or Low-Income Fare",
+        "description": "Reduced fares through Sacramento Regional Transit (SacRT) for students or income-qualified riders.",
+        "form": "SacRT Discount Fare Application",
+        "agency": "Sacramento Regional Transit (SacRT)",
+        "apply_url": "https://www.sacrt.com/fares/",
+        "renewal_months": 12,
+        "monthly_value_estimate": "Estimated $10/month transit savings",
+        "monthly_value_low": 10,
+        "documents": [
+            "Student ID (if applicable)",
+            "Proof of income (last 30 days) if applying as low-income",
+            "Photo ID",
+        ],
+        "check": _check_sacrt_discount,
+        "prefill": _prefill_sacrt_discount,
+    },
+    {
+        "name": "Yolobus Reduced Fare",
+        "description": "Reduced fares through Yolobus for students or income-qualified riders in Yolo County.",
+        "form": "Yolobus Reduced Fare Application",
+        "agency": "Yolobus (Yolo County Transportation District)",
+        "apply_url": "https://yolobus.com/fares/",
+        "renewal_months": 12,
+        "monthly_value_estimate": "Estimated $10/month transit savings",
+        "monthly_value_low": 10,
+        "documents": [
+            "Student ID (if applicable)",
+            "Proof of income (last 30 days) if applying as low-income",
+            "Photo ID",
+        ],
+        "check": _check_yolobus_discount,
+        "prefill": _prefill_yolobus_discount,
+    },
+    {
+        "name": "Sacramento Public Library — Library of Things",
+        "description": "Borrow laptops, hotspots, tools, and other items from Sacramento Public Library to reduce household costs.",
+        "form": "Library Card Signup",
+        "agency": "Sacramento Public Library",
+        "apply_url": "https://www.saclibrary.org/",
+        "renewal_months": 12,
+        "monthly_value_estimate": "Estimated $15/month savings (varies)",
+        "monthly_value_low": 15,
+        "documents": [
+            "Photo ID",
+            "Proof of address (for library card)",
+        ],
+        "check": _check_library_of_things,
+        "prefill": _prefill_library_of_things,
     },
 ]
 

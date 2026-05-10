@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import ProgramCard from "../components/ProgramCard";
 import DocumentList from "../components/DocumentList";
+import { IconChevronDown } from "../components/icons";
+import { IconPhone } from "../components/icons";
+import SupportModal from "../components/SupportModal";
 import { setSmsReminder } from "../api";
 import type { IntakeResponse, Language, MatchedProgram, IntakeProfile } from "../api";
 import { addEnrollment } from "../utils/enrollments";
@@ -69,6 +72,8 @@ function CountUp({ to }: { to: number }) {
 export default function Results({ result, language, strings, onSelectProgram, onStartOver, onEnrollmentAdded }: Props) {
   const [toast, setToast] = useState<string | null>(null);
   const [modalProgram, setModalProgram] = useState<MatchedProgram | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const [extraStreet, setExtraStreet] = useState(result.profile.address || "");
   const [extraSsn, setExtraSsn] = useState(result.profile.ssn_last4 || "");
   const [extraEmployer, setExtraEmployer] = useState(result.profile.last_employer || "");
@@ -76,11 +81,35 @@ export default function Results({ result, language, strings, onSelectProgram, on
 
   const firstName = (result.profile.full_name || "").trim().split(" ")[0] || "there";
 
-  const totalLow = useMemo(
-    () => result.matched_programs.filter((p) => p.confidence !== "low")
-      .reduce((sum, p) => sum + (p.monthly_value_low || 0), 0),
+  const totalAll = useMemo(
+    () => result.matched_programs.reduce((sum, p) => sum + (p.monthly_value_low || 0), 0),
     [result.matched_programs]
   );
+
+  const orderedPrograms = useMemo(() => {
+    const PRIORITY = new Set(["CalFresh", "Medi-Cal", "Unemployment Insurance"]);
+    const LOCAL = new Set([
+      "SMUD EnergyHELP",
+      "PG&E CARE/FERA",
+      "SacRT RydeFree (Student) or Low-Income Fare",
+      "Yolobus Reduced Fare",
+      "Sacramento Public Library — Library of Things",
+    ]);
+    const score = (name: string) => (PRIORITY.has(name) ? 0 : LOCAL.has(name) ? 1 : 2);
+    return [...result.matched_programs].sort((a, b) => {
+      const sa = score(a.name);
+      const sb = score(b.name);
+      if (sa !== sb) return sa - sb;
+      return (b.monthly_value_low || 0) - (a.monthly_value_low || 0);
+    });
+  }, [result.matched_programs]);
+
+  const visiblePrograms = useMemo(() => {
+    if (showAll) return orderedPrograms;
+    return orderedPrograms.slice(0, 4);
+  }, [orderedPrograms, showAll]);
+
+  const remainingCount = Math.max(0, orderedPrograms.length - visiblePrograms.length);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -172,17 +201,31 @@ export default function Results({ result, language, strings, onSelectProgram, on
           color: "var(--bb-green)",
           marginTop: 6,
           letterSpacing: "-0.02em",
-        }}>
-          <CountUp to={totalLow} />
-          <span style={{ fontSize: "1rem", color: "var(--bb-text-soft)", marginLeft: 8, fontFamily: "DM Sans, sans-serif" }}>/mo</span>
+        }}
+        >
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "baseline",
+              gap: 8,
+              padding: "6px 18px",
+              borderRadius: 999,
+              background: "white",
+              border: "1px solid var(--bb-border)",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            }}
+          >
+            <CountUp to={totalAll} />
+            <span style={{ fontSize: "1rem", color: "var(--bb-text-soft)", fontFamily: "DM Sans, sans-serif" }}>/mo</span>
+          </span>
         </div>
         <div style={{ color: "var(--bb-text-soft)", marginTop: 4 }}>
           {strings.worthUpTo(result.total_monthly_estimate)}
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 0 }}>
-        {result.matched_programs.map((program, i) => (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 12 }}>
+        {visiblePrograms.map((program, i) => (
           <ProgramCard
             key={program.name}
             program={program}
@@ -191,9 +234,25 @@ export default function Results({ result, language, strings, onSelectProgram, on
             delayIndex={i}
             onPreFill={() => handlePreFill(program)}
             onSetReminder={() => handleReminder(program)}
+            onOpen={() => onSelectProgram(program, result.profile)}
           />
         ))}
       </div>
+
+      {!showAll && remainingCount > 0 && (
+        <div style={{ textAlign: "center", marginTop: 10 }}>
+          <button
+            type="button"
+            className="bb-btn bb-btn-ghost"
+            onClick={() => setShowAll(true)}
+          >
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+              View {remainingCount} Additional Local Services
+              <IconChevronDown size={18} />
+            </span>
+          </button>
+        </div>
+      )}
 
       <div className="bb-card" style={{ marginTop: 12 }}>
         <DocumentList
@@ -203,12 +262,14 @@ export default function Results({ result, language, strings, onSelectProgram, on
         />
       </div>
 
-      <div className="bb-disclaimer">{result.disclaimer}</div>
-
       <div style={{ textAlign: "center", marginTop: 24 }}>
         <button type="button" className="bb-btn bb-btn-ghost" onClick={onStartOver}>
           {strings.startOver}
         </button>
+      </div>
+
+      <div className="bb-disclaimer" style={{ marginTop: 18 }}>
+        {result.disclaimer}
       </div>
 
       {modalProgram && (
@@ -274,6 +335,26 @@ export default function Results({ result, language, strings, onSelectProgram, on
           </div>
         </div>
       )}
+
+      <button
+        type="button"
+        className="bb-support-fab"
+        onClick={() => setSupportOpen(true)}
+        aria-label="Talk to a Local Expert"
+      >
+        <span className="bb-support-fab-icon" aria-hidden="true">
+          <IconPhone size={24} />
+        </span>
+        <span className="bb-support-fab-label">Talk to a Local Expert</span>
+      </button>
+
+      <SupportModal
+        open={supportOpen}
+        onClose={() => setSupportOpen(false)}
+        profile={result.profile}
+        programs={result.matched_programs}
+        language={language}
+      />
 
       {toast && <div className="bb-toast">{toast}</div>}
     </div>

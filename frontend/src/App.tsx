@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Landing from "./screens/Landing";
 import Intake from "./screens/Intake";
 import Results from "./screens/Results";
 import FormView from "./screens/FormView";
@@ -7,8 +8,9 @@ import LanguageToggle from "./components/LanguageToggle";
 import { IconBenefitsWallet, IconSearch } from "./components/icons";
 import { submitIntake } from "./api";
 import type { IntakeProfile, IntakeResponse, Language, MatchedProgram } from "./api";
+import { clearEnrollments, getEnrollmentSource } from "./utils/enrollments";
 
-type Screen = "intake" | "results" | "formview";
+type Screen = "LANDING" | "INTAKE" | "RESULTS" | "FORMVIEW";
 type Tab = "find" | "my";
 
 const STRINGS = {
@@ -198,7 +200,7 @@ const STRINGS = {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>("find");
-  const [screen, setScreen] = useState<Screen>("intake");
+  const [screen, setScreen] = useState<Screen>("LANDING");
   const [language, setLanguage] = useState<Language>("en");
   const [result, setResult] = useState<IntakeResponse | null>(null);
   const [selectedProgram, setSelectedProgram] = useState<MatchedProgram | null>(null);
@@ -206,16 +208,34 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enrollmentsRefreshToken, setEnrollmentsRefreshToken] = useState(0);
+  const [demoUsedThisSession, setDemoUsedThisSession] = useState(false);
 
   const t = STRINGS[language];
+
+  useEffect(() => {
+    // Default behavior: start with an empty "My Benefits" unless the user
+    // has explicitly enrolled (via pre-fill). Prevent stale/demo localStorage
+    // from appearing by default on refresh.
+    if (getEnrollmentSource() !== "user") {
+      clearEnrollments();
+      bumpEnrollments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (profile: IntakeProfile) => {
     setLoading(true);
     setError(null);
     try {
+      // If the user ran a normal intake (no demo buttons), ensure My Benefits starts empty.
+      // Enrollments are only created when the user clicks "Pre-fill My Application" later.
+      if (!demoUsedThisSession) {
+        clearEnrollments();
+        bumpEnrollments();
+      }
       const resp = await submitIntake({ ...profile, language });
       setResult(resp);
-      setScreen("results");
+      setScreen("RESULTS");
     } catch (e: any) {
       setError(t.intakeError);
     } finally {
@@ -226,7 +246,7 @@ export default function App() {
   const handleSelectProgram = (program: MatchedProgram, profile: IntakeProfile) => {
     setSelectedProgram(program);
     setSelectedProfile(profile);
-    setScreen("formview");
+    setScreen("FORMVIEW");
   };
 
   const bumpEnrollments = () => setEnrollmentsRefreshToken((v) => v + 1);
@@ -235,7 +255,67 @@ export default function App() {
     setResult(null);
     setSelectedProgram(null);
     setSelectedProfile(null);
-    setScreen("intake");
+    setScreen("LANDING");
+    setDemoUsedThisSession(false);
+  };
+
+  const startAssessment = () => {
+    clearEnrollments();
+    bumpEnrollments();
+    setDemoUsedThisSession(false);
+    setResult(null);
+    setSelectedProgram(null);
+    setSelectedProfile(null);
+    setTab("find");
+    setScreen("INTAKE");
+  };
+
+  const meetRosa = async () => {
+    clearEnrollments();
+    bumpEnrollments();
+    setDemoUsedThisSession(true);
+    setError(null);
+    setLoading(true);
+    setTab("find");
+    const rosa: IntakeProfile = {
+      full_name: "Rosa Martinez",
+      date_of_birth: "1966-03-15",
+      address: "423 Main Street",
+      city: "Woodland",
+      zip_code: "95695",
+      phone: "+15304441234",
+      monthly_income: 0,
+      household_size: 1,
+      age: 58,
+      recently_unemployed: true,
+      worked_last_18_months: true,
+      self_employed: false,
+      citizen_or_legal_resident: true,
+      has_disability: false,
+      pregnant: false,
+      has_children_under_5: false,
+      is_student: false,
+      work_study: false,
+      cal_grant_a_or_b: false,
+      campus_support_program: false,
+      works_20_hours_week: false,
+      has_dependent_under_12: false,
+      meal_plan_count: 0,
+      ssn_last4: "4321",
+      last_employer: "Sacramento Unified School District",
+      separation_date: "2024-11-01",
+      language,
+    };
+    try {
+      const resp = await submitIntake({ ...rosa, language });
+      setResult(resp);
+      setScreen("RESULTS");
+    } catch {
+      setError(t.intakeError);
+      setScreen("LANDING");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -285,7 +365,15 @@ export default function App() {
       )}
 
       <main style={{ flex: 1 }}>
-        {!loading && tab === "find" && screen === "intake" && (
+        {!loading && tab === "find" && screen === "LANDING" && (
+          <Landing
+            language={language}
+            onStartAssessment={startAssessment}
+            onMeetRosa={meetRosa}
+          />
+        )}
+
+        {!loading && tab === "find" && screen === "INTAKE" && (
           <Intake
             language={language}
             strings={t.intake}
@@ -294,10 +382,12 @@ export default function App() {
             loading={loading}
             errorMessage={error}
             onRosaDemoPrepared={bumpEnrollments}
+            onDemoUsed={() => setDemoUsedThisSession(true)}
+            onBackToLanding={() => setScreen("LANDING")}
           />
         )}
 
-        {!loading && tab === "find" && screen === "results" && result && (
+        {!loading && tab === "find" && screen === "RESULTS" && result && (
           <Results
             result={result}
             language={language}
@@ -308,13 +398,13 @@ export default function App() {
           />
         )}
 
-        {!loading && tab === "find" && screen === "formview" && selectedProgram && selectedProfile && (
+        {!loading && tab === "find" && screen === "FORMVIEW" && selectedProgram && selectedProfile && (
           <FormView
             program={selectedProgram}
             profile={selectedProfile}
             language={language}
             strings={t.formview}
-            onBack={() => setScreen("results")}
+            onBack={() => setScreen("RESULTS")}
           />
         )}
 
@@ -324,7 +414,7 @@ export default function App() {
             refreshToken={enrollmentsRefreshToken}
             onGoFindBenefits={() => {
               setTab("find");
-              setScreen("intake");
+              setScreen("LANDING");
             }}
           />
         )}

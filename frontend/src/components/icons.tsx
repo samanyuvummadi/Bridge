@@ -118,3 +118,33 @@ export function IconTimelineDot(props: IconProps) {
     </svg>
   );
 }
+
+export function IconChevronDown(props: IconProps) {
+  const p = base(props);
+  return (
+    <svg {...p} aria-hidden="true">
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function IconPhone(props: IconProps) {
+  const p = base(props);
+  return (
+    <svg {...p} aria-hidden="true">
+      <path
+        d="M7.5 3.5h2.2c.6 0 1.1.4 1.2 1l.6 2.6c.1.5-.1 1-.5 1.3l-1.5 1.1c1.1 2 2.8 3.7 4.8 4.8l1.1-1.5c.3-.4.8-.6 1.3-.5l2.6.6c.6.1 1 .6 1 1.2v2.2c0 .7-.6 1.3-1.3 1.3C12 19.4 4.6 12 4.2 4.8c0-.7.6-1.3 1.3-1.3z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}

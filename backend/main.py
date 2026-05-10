@@ -60,6 +60,7 @@ class IntakeProfile(BaseModel):
     is_student: bool = False
     work_study: bool = False
     cal_grant_a_or_b: bool = False
+    campus_support_program: bool = False
     works_20_hours_week: bool = False
     has_dependent_under_12: bool = False
     meal_plan_count: int = 0
@@ -79,6 +80,12 @@ class ReminderRequest(BaseModel):
 class FormPdfRequest(BaseModel):
     profile: IntakeProfile
     program_name: str
+
+
+class SupportScriptRequest(BaseModel):
+    profile: IntakeProfile
+    program_names: list[str] = []
+    language: str = "en"
 
 
 @app.get("/api/health")
@@ -154,6 +161,15 @@ def form_pdf(req: FormPdfRequest):
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=BenefitBridge_{safe_name}.pdf"},
     )
+
+
+@app.post("/api/support-script")
+def support_script(req: SupportScriptRequest):
+    p = req.profile.model_dump()
+    lang = req.language or p.get("language", "en") or "en"
+    # Use Gemini for a short handover script; fallback is handled inside gemini.py.
+    script = gemini.generate_support_script(req.program_names, p, lang)
+    return {"script": script}
 
 
 @app.get("/api/intake-question/{question_key}")

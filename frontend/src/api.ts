@@ -22,6 +22,7 @@ export interface IntakeProfile {
   is_student: boolean;
   work_study: boolean;
   cal_grant_a_or_b: boolean;
+  campus_support_program: boolean;
   works_20_hours_week: boolean;
   has_dependent_under_12: boolean;
   meal_plan_count: number;
@@ -119,4 +120,22 @@ export async function checkHealth(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export interface SupportScriptResponse {
+  script: string;
+}
+
+export async function getSupportScript(
+  profile: IntakeProfile,
+  programNames: string[],
+  language: Language
+): Promise<string> {
+  const resp = await fetch(`${BASE}/api/support-script`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ profile, program_names: programNames, language }),
+  });
+  const data = await jsonOrThrow<SupportScriptResponse>(resp);
+  return data.script;
 }
