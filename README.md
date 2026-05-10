@@ -1,12 +1,20 @@
-# BenefitBridge
+# 🌿 BenefitBridge
 
 **BenefitBridge** helps low-income California residents discover government benefits they qualify for — fast. Answer ~8 plain-English questions and get matched programs with prefilled application fields and Gemini-generated plain-language explanations in English or Spanish.
 
-**The headline feature:** one intake → multiple programs (CalFresh, Medi-Cal, EDD, General Relief, WIC) all receive the same prefilled name, address, phone, and personal details simultaneously.
+✨ **The headline feature:** one intake → multiple programs (CalFresh, Medi-Cal, EDD, General Relief, WIC) all receive the same prefilled name, address, phone, and personal details simultaneously.
 
 ---
 
-## Tech Stack
+## 📸 Screenshots
+
+| Landing | Intake Wizard | Demo Profile (Rosa) |
+|---|---|---|
+| ![Landing](screenshots/01_landing.png) | ![Intake](screenshots/02_intake.png) | ![Intake Filled](screenshots/03_intake_filled.png) |
+
+---
+
+## 🛠 Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -18,7 +26,7 @@
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -55,7 +63,7 @@ The frontend reads `VITE_API_URL` from `frontend/.env`, which should point to `h
 
 ---
 
-## Environment Variables
+## 🔐 Environment Variables
 
 Project-root `.env` is loaded by the backend via `python-dotenv`.
 
@@ -66,18 +74,18 @@ Project-root `.env` is loaded by the backend via `python-dotenv`.
 | `TWILIO_AUTH` | Optional | Twilio Auth Token. |
 | `TWILIO_FROM` | Optional | Twilio sender phone number. |
 
-The app **never crashes on missing optional vars** — SMS silently returns `{"success": false}` and Gemini falls back to static explanations.
+> The app **never crashes on missing optional vars** — SMS silently returns `{"success": false}` and Gemini falls back to static explanations.
 
 ---
 
-## Port Conventions
+## 🔌 Port Conventions
 
 - **Backend: 8001** (port 8000 is reserved by an unrelated local service)
 - **Frontend: 5173** (or whatever Vite picks; check the Vite startup log)
 
 ---
 
-## Architecture
+## 🏗 Architecture
 
 ### Backend (`backend/`)
 
@@ -90,16 +98,18 @@ The app **never crashes on missing optional vars** — SMS silently returns `{"s
 | `sms.py` | Twilio wrapper with lazy import — the SDK is not a hard dependency at module load. |
 | `translate.py` | Hardcoded EN→ES dictionary for static UI strings. Dynamic explanations come from Gemini. |
 
-**`SHARED_FIELDS`** in `eligibility.py` lists the fields that flow into every program's `prefill()` — name, DOB, address, city, ZIP, phone. This is what makes the simultaneous prefill moment work.
+> **`SHARED_FIELDS`** in `eligibility.py` lists the fields that flow into every program's `prefill()` — name, DOB, address, city, ZIP, phone. This is what makes the simultaneous prefill moment work.
 
 ### Frontend (`frontend/src/`)
 
 | File | Role |
 |---|---|
-| `App.tsx` | Three-screen state machine: `intake` → `results` → `formview`. No router. |
-| `screens/Intake.tsx` | 8-question wizard. Includes the "Load Demo Profile" button (Rosa Martinez). |
+| `App.tsx` | Three-screen state machine: `landing` → `intake` → `results` → `formview`. No router. |
+| `screens/Landing.tsx` | Welcome screen with "Start My Assessment" CTA and demo profiles. |
+| `screens/Intake.tsx` | 10-question wizard. Includes the "Load Demo Profile (Rosa)" button. |
 | `screens/Results.tsx` | Hero screen — animated count-up, sequenced program card reveals, deduplicated document checklist, pre-fill modal. |
 | `screens/FormView.tsx` | Single-program prefilled view with highlighted prefill table. |
+| `screens/MyBenefits.tsx` | Enrolled programs tracker. |
 | `components/VoiceInput.tsx` | Web Speech API wrapper. Renders `null` on unsupported browsers (e.g. Firefox) — never throws. |
 | `api.ts` | `fetch` wrappers; reads `VITE_API_URL`. |
 
@@ -107,7 +117,7 @@ Styles live in `frontend/index.html` as a `<style>` block using CSS variables (`
 
 ---
 
-## Supported Programs
+## 🎯 Supported Programs
 
 | Program | Agency |
 |---|---|
@@ -119,7 +129,7 @@ Styles live in `frontend/index.html` as a `<style>` block using CSS variables (`
 
 ---
 
-## Smoke Test
+## 🧪 Smoke Test
 
 With the backend running on port 8001:
 
@@ -138,7 +148,7 @@ Expected: 4 programs matched at HIGH confidence (CalFresh, Medi-Cal, Unemploymen
 
 ---
 
-## Build
+## 📦 Build
 
 ```bash
 cd frontend
