@@ -237,7 +237,11 @@ export default function App() {
       setResult(resp);
       setScreen("RESULTS");
     } catch (e: any) {
-      setError(t.intakeError);
+      const detail =
+        typeof e?.message === "string" && e.message.trim().length > 0
+          ? ` (${e.message})`
+          : "";
+      setError(t.intakeError + detail);
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,13 @@
-const BASE = (import.meta.env.VITE_API_URL as string | undefined) || "http://localhost:8000";
+// Default to same-origin so the dev server can proxy `/api` for LAN/mobile testing.
+// If an env URL points at localhost, ignore it when running on a non-localhost device
+// (e.g. iPhone on hotspot), since that would target the phone itself.
+const ENV_BASE = (import.meta.env.VITE_API_URL as string | undefined) || "";
+const isBrowser = typeof window !== "undefined";
+const isLocalHost =
+  isBrowser && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+const envLooksLikeLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(ENV_BASE);
+
+const BASE = !isLocalHost && envLooksLikeLocalhost ? "" : ENV_BASE;
 
 export type Language = "en" | "es";
 

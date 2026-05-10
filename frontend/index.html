@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Bridge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <link rel="apple-touch-icon" href="/logo192.png">
     <meta name="theme-color" content="#1B5E20" />
     <title>BenefitBridge — Find the benefits you've earned</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -36,6 +40,7 @@
         font-size: 16px;
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
+        overscroll-behavior: none;
       }
       h1, h2, h3 {
         font-family: "DM Serif Display", Georgia, serif;
@@ -68,6 +73,8 @@
         min-height: 100%;
         display: flex;
         flex-direction: column;
+        /* iPhone notch / dynamic island safe area */
+        padding-top: max(48px, env(safe-area-inset-top));
       }
       .bb-header {
         padding: 18px 22px;
