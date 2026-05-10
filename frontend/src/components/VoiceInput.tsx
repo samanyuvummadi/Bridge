@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { IconMic, IconStopFilled } from "./icons";
 
 interface Props {
   onTranscript: (text: string) => void;
@@ -59,7 +60,7 @@ export default function VoiceInput({ onTranscript, language, ariaLabel }: Props)
       aria-pressed={listening}
       onClick={listening ? stop : start}
     >
-      {listening ? "■" : "🎙"}
+      {listening ? <IconStopFilled size={16} /> : <IconMic size={17} />}
     </button>
   );
 }

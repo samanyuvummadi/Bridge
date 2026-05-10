@@ -226,6 +226,167 @@
         z-index: 100;
       }
 
+      /* Tab bar */
+      .bb-tabbar {
+        position: relative;
+        left: 0; right: 0;
+        height: 56px;
+        background: var(--bb-surface);
+        border-top: 1px solid #eee;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        z-index: 10;
+      }
+      .bb-tabbar-top {
+        border-top: none;
+        border-bottom: 1px solid #eee;
+      }
+      .bb-tab {
+        border: none;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--bb-text-soft);
+        font-weight: 700;
+        height: 56px;
+      }
+      .bb-tab-active { color: var(--bb-green); }
+      .bb-tab-icon { display: grid; place-items: center; line-height: 0; }
+      .bb-tab-label { font-size: 0.8rem; }
+      .bb-svg-icon { display: block; flex-shrink: 0; }
+
+      /* Total saved hero */
+      .bb-total-hero {
+        background: #1B4332;
+        border-radius: var(--bb-radius);
+        padding: 22px 18px;
+        color: rgba(255,255,255,0.92);
+        box-shadow: var(--bb-shadow);
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+      .bb-total-hero-kicker {
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.72);
+      }
+      .bb-total-hero-amount {
+        margin-top: 10px;
+        font-family: "DM Serif Display", Georgia, serif;
+        font-size: clamp(48px, 8vw, 72px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        position: relative;
+        display: inline-block;
+      }
+      .bb-total-hero-amount-text { position: relative; z-index: 2; }
+      .bb-total-hero-shimmer::after {
+        content: "";
+        position: absolute;
+        inset: -6px -10px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.0), rgba(255,255,255,0.28), rgba(255,255,255,0.0));
+        transform: translateX(-120%);
+        animation: bb-shimmer 1.1s ease-in-out infinite;
+        z-index: 1;
+        pointer-events: none;
+        mix-blend-mode: screen;
+      }
+      @keyframes bb-shimmer {
+        0% { transform: translateX(-120%); }
+        100% { transform: translateX(120%); }
+      }
+      .bb-total-hero-sub {
+        margin-top: 8px;
+        color: rgba(255,255,255,0.7);
+        font-size: 0.95rem;
+      }
+
+      /* Renewal cards */
+      .bb-renewal-card {
+        background: var(--bb-surface);
+        border: 1px solid var(--bb-border);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      }
+      .bb-renewal-card-critical {
+        animation: bb-renewal-critical 1.3s infinite;
+      }
+      @keyframes bb-renewal-critical {
+        0% { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        70% { box-shadow: 0 0 0 14px rgba(178, 34, 34, 0); }
+        100% { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+      }
+      .bb-renewal-badge {
+        font-size: 0.72rem;
+        font-weight: 900;
+        letter-spacing: 0.07em;
+        padding: 4px 10px;
+        border-radius: 999px;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+      }
+      .bb-renewal-badge-safe { background: var(--bb-green-soft); color: var(--bb-green); border-color: rgba(27,94,32,0.18); }
+      .bb-renewal-badge-soon { background: var(--bb-amber-soft); color: var(--bb-amber); border-color: rgba(199,126,31,0.18); }
+      .bb-renewal-badge-urgent { background: rgba(210,105,30,0.12); color: #D2691E; border-color: rgba(210,105,30,0.2); }
+      .bb-renewal-badge-critical { background: rgba(178,34,34,0.12); color: var(--bb-danger); border-color: rgba(178,34,34,0.2); }
+      .bb-renewal-badge-expired { background: rgba(154,165,154,0.2); color: #566156; border-color: rgba(154,165,154,0.45); }
+      .bb-renewal-track {
+        height: 8px;
+        background: #ECECE6;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .bb-renewal-fill {
+        height: 100%;
+        width: 0%;
+        transition: width 0.3s ease;
+      }
+      .bb-renewal-docs {
+        margin-top: 12px;
+        background: var(--bb-green-soft);
+        border: 1px solid rgba(27,94,32,0.12);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+
+      /* Timeline */
+      .bb-timeline-item {
+        border: 1px solid var(--bb-border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+      }
+      .bb-timeline-btn {
+        width: 100%;
+        text-align: left;
+        padding: 14px 14px;
+        background: transparent;
+        border: none;
+      }
+      .bb-timeline-expanded {
+        padding: 12px 14px 14px;
+        border-top: 1px solid var(--bb-border);
+        background: var(--bb-amber-soft);
+      }
+
+      /* Demo button */
+      .bb-demo-btn {
+        position: fixed;
+        right: 14px;
+        bottom: 68px;
+        border: none;
+        background: transparent;
+        color: #808A80;
+        font-size: 0.82rem;
+        padding: 8px 10px;
+        z-index: 70;
+      }
+      .bb-demo-btn:hover { color: var(--bb-text-soft); text-decoration: underline; }
+
       /* Card animations */
       @keyframes bb-rise {
         from { opacity: 0; transform: translateY(12px); }
@@ -306,7 +467,7 @@
       @media (max-width: 480px) {
         h1 { font-size: 1.9rem; }
         h2 { font-size: 1.4rem; }
-        .bb-container { padding: 18px 16px 40px; }
+        .bb-container { padding: 18px 16px 60px; }
       }
     </style>
   </head>

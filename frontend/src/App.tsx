@@ -2,11 +2,14 @@ import { useState } from "react";
 import Intake from "./screens/Intake";
 import Results from "./screens/Results";
 import FormView from "./screens/FormView";
+import MyBenefits from "./screens/MyBenefits";
 import LanguageToggle from "./components/LanguageToggle";
+import { IconBenefitsWallet, IconSearch } from "./components/icons";
 import { submitIntake } from "./api";
 import type { IntakeProfile, IntakeResponse, Language, MatchedProgram } from "./api";
 
 type Screen = "intake" | "results" | "formview";
+type Tab = "find" | "my";
 
 const STRINGS = {
   en: {
@@ -93,6 +96,10 @@ const STRINGS = {
       downloadPdf: "Download PDF Summary",
       downloadFailed: "Could not download PDF",
       disclaimer: "BenefitBridge is a screening tool, not a legal benefits determination. Your eligibility is confirmed when you complete the official application.",
+    },
+    tabs: {
+      find: "Find Benefits",
+      my: "My Benefits",
     },
     intakeError: "Couldn't reach the BenefitBridge service. Please try again.",
   },
@@ -181,11 +188,16 @@ const STRINGS = {
       downloadFailed: "No se pudo descargar el PDF",
       disclaimer: "BenefitBridge es una herramienta de evaluación, no una determinación oficial. Tu elegibilidad se confirma al completar la solicitud oficial.",
     },
+    tabs: {
+      find: "Encontrar",
+      my: "Mis beneficios",
+    },
     intakeError: "No pudimos conectar con el servicio. Por favor intenta de nuevo.",
   },
 };
 
 export default function App() {
+  const [tab, setTab] = useState<Tab>("find");
   const [screen, setScreen] = useState<Screen>("intake");
   const [language, setLanguage] = useState<Language>("en");
   const [result, setResult] = useState<IntakeResponse | null>(null);
@@ -193,6 +205,7 @@ export default function App() {
   const [selectedProfile, setSelectedProfile] = useState<IntakeProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [enrollmentsRefreshToken, setEnrollmentsRefreshToken] = useState(0);
 
   const t = STRINGS[language];
 
@@ -216,6 +229,8 @@ export default function App() {
     setScreen("formview");
   };
 
+  const bumpEnrollments = () => setEnrollmentsRefreshToken((v) => v + 1);
+
   const handleStartOver = () => {
     setResult(null);
     setSelectedProgram(null);
@@ -233,6 +248,32 @@ export default function App() {
         <LanguageToggle value={language} onChange={setLanguage} />
       </header>
 
+      <nav className="bb-tabbar bb-tabbar-top" role="navigation" aria-label="Primary">
+        <button
+          type="button"
+          className={`bb-tab ${tab === "find" ? "bb-tab-active" : ""}`}
+          onClick={() => setTab("find")}
+        >
+          <span className="bb-tab-icon">
+            <IconSearch size={22} />
+          </span>
+          <span className="bb-tab-label">{t.tabs.find}</span>
+        </button>
+        <button
+          type="button"
+          className={`bb-tab ${tab === "my" ? "bb-tab-active" : ""}`}
+          onClick={() => {
+            bumpEnrollments();
+            setTab("my");
+          }}
+        >
+          <span className="bb-tab-icon">
+            <IconBenefitsWallet size={22} />
+          </span>
+          <span className="bb-tab-label">{t.tabs.my}</span>
+        </button>
+      </nav>
+
       {loading && (
         <div className="bb-container" aria-live="polite">
           <div className="bb-card" style={{ textAlign: "center" }}>
@@ -243,36 +284,51 @@ export default function App() {
         </div>
       )}
 
-      {!loading && screen === "intake" && (
-        <Intake
-          language={language}
-          strings={t.intake}
-          onLanguageChange={setLanguage}
-          onSubmit={handleSubmit}
-          loading={loading}
-          errorMessage={error}
-        />
-      )}
+      <main style={{ flex: 1 }}>
+        {!loading && tab === "find" && screen === "intake" && (
+          <Intake
+            language={language}
+            strings={t.intake}
+            onLanguageChange={setLanguage}
+            onSubmit={handleSubmit}
+            loading={loading}
+            errorMessage={error}
+            onRosaDemoPrepared={bumpEnrollments}
+          />
+        )}
 
-      {!loading && screen === "results" && result && (
-        <Results
-          result={result}
-          language={language}
-          strings={t.results}
-          onSelectProgram={handleSelectProgram}
-          onStartOver={handleStartOver}
-        />
-      )}
+        {!loading && tab === "find" && screen === "results" && result && (
+          <Results
+            result={result}
+            language={language}
+            strings={t.results}
+            onSelectProgram={handleSelectProgram}
+            onStartOver={handleStartOver}
+            onEnrollmentAdded={bumpEnrollments}
+          />
+        )}
 
-      {!loading && screen === "formview" && selectedProgram && selectedProfile && (
-        <FormView
-          program={selectedProgram}
-          profile={selectedProfile}
-          language={language}
-          strings={t.formview}
-          onBack={() => setScreen("results")}
-        />
-      )}
+        {!loading && tab === "find" && screen === "formview" && selectedProgram && selectedProfile && (
+          <FormView
+            program={selectedProgram}
+            profile={selectedProfile}
+            language={language}
+            strings={t.formview}
+            onBack={() => setScreen("results")}
+          />
+        )}
+
+        {!loading && tab === "my" && (
+          <MyBenefits
+            language={language}
+            refreshToken={enrollmentsRefreshToken}
+            onGoFindBenefits={() => {
+              setTab("find");
+              setScreen("intake");
+            }}
+          />
+        )}
+      </main>
     </div>
   );
 }

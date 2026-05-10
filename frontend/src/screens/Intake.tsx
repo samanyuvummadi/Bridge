@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import VoiceInput from "../components/VoiceInput";
+import { IconSparkle } from "../components/icons";
 import type { IntakeProfile, Language } from "../api";
+import { loadRosaDemoData } from "../utils/enrollments";
 
 interface Strings {
   questionN: (n: number, total: number) => string;
@@ -38,6 +40,8 @@ interface Props {
   onSubmit: (profile: IntakeProfile) => void;
   loading: boolean;
   errorMessage: string | null;
+  /** After filling Rosa demo intake, sync My Benefits enrollment demo state */
+  onRosaDemoPrepared?: () => void;
 }
 
 const TOTAL = 8;
@@ -80,7 +84,7 @@ function digitsOnly(s: string): string {
   return (s || "").replace(/[^\d]/g, "");
 }
 
-export default function Intake({ language, strings, onLanguageChange, onSubmit, loading, errorMessage }: Props) {
+export default function Intake({ language, strings, onLanguageChange, onSubmit, loading, errorMessage, onRosaDemoPrepared }: Props) {
   const [step, setStep] = useState(0);
   const [profile, setProfile] = useState<IntakeProfile>({ ...DEMO, full_name: "", date_of_birth: "", address: "", city: "", zip_code: "", phone: "", monthly_income: 0, household_size: 1, age: 0, recently_unemployed: false, worked_last_18_months: false, self_employed: false, citizen_or_legal_resident: false, has_disability: false, pregnant: false, has_children_under_5: false, ssn_last4: "", last_employer: "", separation_date: "", language });
 
@@ -89,8 +93,10 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
   };
 
   const loadDemo = () => {
+    loadRosaDemoData();
     setProfile({ ...DEMO, language });
     setStep(TOTAL - 1);
+    onRosaDemoPrepared?.();
   };
 
   const isValid = useMemo(() => {
@@ -351,7 +357,10 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
           className="bb-btn bb-btn-ghost"
           onClick={loadDemo}
         >
-          ★ {strings.loadDemo}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <IconSparkle size={16} />
+            {strings.loadDemo}
+          </span>
         </button>
       </div>
 

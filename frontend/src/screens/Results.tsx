@@ -3,6 +3,7 @@ import ProgramCard from "../components/ProgramCard";
 import DocumentList from "../components/DocumentList";
 import { setSmsReminder } from "../api";
 import type { IntakeResponse, Language, MatchedProgram, IntakeProfile } from "../api";
+import { addEnrollment } from "../utils/enrollments";
 
 interface Strings {
   qualifyHeadline: (firstName: string, count: number) => string;
@@ -43,6 +44,7 @@ interface Props {
   strings: Strings;
   onSelectProgram: (program: MatchedProgram, profile: IntakeProfile) => void;
   onStartOver: () => void;
+  onEnrollmentAdded?: () => void;
 }
 
 function CountUp({ to }: { to: number }) {
@@ -64,7 +66,7 @@ function CountUp({ to }: { to: number }) {
   return <>${v.toLocaleString()}</>;
 }
 
-export default function Results({ result, language, strings, onSelectProgram, onStartOver }: Props) {
+export default function Results({ result, language, strings, onSelectProgram, onStartOver, onEnrollmentAdded }: Props) {
   const [toast, setToast] = useState<string | null>(null);
   const [modalProgram, setModalProgram] = useState<MatchedProgram | null>(null);
   const [extraStreet, setExtraStreet] = useState(result.profile.address || "");
@@ -107,6 +109,19 @@ export default function Results({ result, language, strings, onSelectProgram, on
     setModalProgram(program);
   };
 
+  const parseMonthlyValue = (estimate: string): number => {
+    const match = estimate.match(/\$(\d+)/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  const todayIso = () => {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
+
   const confirmModal = () => {
     if (!modalProgram) return;
     const enriched: IntakeProfile = {
@@ -130,6 +145,19 @@ export default function Results({ result, language, strings, onSelectProgram, on
         ...(extraSeparation ? { "Date of Separation": extraSeparation } : {}),
       },
     };
+
+    addEnrollment({
+      program_name: modalProgram.name,
+      enrolled_date: todayIso(),
+      renewal_date: modalProgram.renewal_date,
+      monthly_value: parseMonthlyValue(modalProgram.monthly_value_estimate),
+      reminder_set: false,
+      phone: result.profile.phone,
+      language,
+      status: "active",
+    });
+    onEnrollmentAdded?.();
+
     setModalProgram(null);
     onSelectProgram(updated, enriched);
   };
