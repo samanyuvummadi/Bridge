@@ -5,7 +5,7 @@ import Results from "./screens/Results";
 import FormView from "./screens/FormView";
 import MyBenefits from "./screens/MyBenefits";
 import LanguageToggle from "./components/LanguageToggle";
-import { IconBenefitsWallet, IconSearch } from "./components/icons";
+import { IconBenefitsWallet, IconLogo, IconSearch } from "./components/icons";
 import { submitIntake } from "./api";
 import type { IntakeProfile, IntakeResponse, Language, MatchedProgram } from "./api";
 import { clearEnrollments, getEnrollmentSource } from "./utils/enrollments";
@@ -322,7 +322,12 @@ export default function App() {
     <div className="bb-app">
       <header className="bb-header">
         <div>
-          <div className="bb-brand">{t.appName}</div>
+          <div className="bb-brand" style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: "#1B4332", display: "inline-flex", alignItems: "center" }} aria-hidden="true">
+              <IconLogo size={24} />
+            </span>
+            {t.appName}
+          </div>
           <div style={{ fontSize: "0.85rem", color: "var(--bb-text-soft)" }}>{t.tagline}</div>
         </div>
         <LanguageToggle value={language} onChange={setLanguage} />

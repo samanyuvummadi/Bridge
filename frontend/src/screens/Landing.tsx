@@ -1,4 +1,5 @@
 import type { Language } from "../api";
+import { IconLogo } from "../components/icons";
 
 export default function Landing({
   language,
@@ -30,8 +31,11 @@ export default function Landing({
       };
 
   return (
-    <div className="bb-container">
+    <div className="bb-container" style={{ position: "relative" }}>
       <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 6, color: "#1B4332" }} aria-hidden="true">
+          <IconLogo size={44} />
+        </div>
         <h1 style={{ color: "#1B4332", marginBottom: 8 }}>{t.title}</h1>
         <div style={{ color: "var(--bb-text-soft)", maxWidth: 560, margin: "0 auto" }}>
           {t.subtitle}
@@ -57,6 +61,7 @@ export default function Landing({
           {t.demoRosa}
         </button>
       </div>
+
     </div>
   );
 }

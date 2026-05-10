@@ -51,6 +51,41 @@ export function IconSprout(props: IconProps) {
   );
 }
 
+/** App logo mark (sprout) */
+export function IconLogo(props: IconProps) {
+  const p = base({ ...props, size: props.size ?? 26 });
+  return (
+    <svg {...p} aria-hidden="true">
+      <path
+        d="M12 19c0-4.5 3.6-8.8 9-10-1.1 5.1-4.6 8.8-9 10z"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 19c0-4.5-3.6-8.8-9-10 1.1 5.1 4.6 8.8 9 10z"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12 19v2"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.5 21h9"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function IconClipboard(props: IconProps) {
   const p = base(props);
   return (

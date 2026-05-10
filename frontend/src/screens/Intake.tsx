@@ -191,6 +191,14 @@ export default function Intake({ language, strings, onLanguageChange, onSubmit, 
 
   const goNext = () => {
     if (!isValid) return;
+    // Normalize phone numbers once they've reached validity so downstream APIs
+    // get a predictable E.164-ish value.
+    if (steps[step] === "phone") {
+      const digits = digitsOnly(profile.phone);
+      if (digits.length >= 10) {
+        update("phone", "+1" + digits.slice(-10));
+      }
+    }
     if (step === steps.length - 1) {
       const finalProfile: IntakeProfile = {
         ...profile,

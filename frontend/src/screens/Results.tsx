@@ -192,7 +192,7 @@ export default function Results({ result, language, strings, onSelectProgram, on
   };
 
   return (
-    <div className="bb-container">
+    <div className="bb-container" style={{ position: "relative" }}>
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <h1>{strings.qualifyHeadline(firstName, result.matched_programs.length)}</h1>
         <div style={{
