@@ -12,7 +12,7 @@ export default function Landing({
 }) {
   const t = language === "es"
     ? {
-        title: "Bienvenido a BenefitBridge",
+        title: "Bienvenido a Bridge",
         subtitle: "Descubre y mantén los beneficios que te has ganado. Toma aproximadamente 2 minutos.",
         privateB: "Tus datos se quedan en tu dispositivo.",
         localizedB: "Creado específicamente para residentes de Sacramento y el condado de Yolo.",
@@ -21,7 +21,7 @@ export default function Landing({
         demoRosa: "Rosa (adulta mayor en Woodland)",
       }
     : {
-        title: "Welcome to BenefitBridge",
+        title: "Welcome to Bridge",
         subtitle: "Discover and maintain the benefits you’ve earned. It takes about 2 minutes.",
         privateB: "Your data stays on your device.",
         localizedB: "Built specifically for Sacramento & Yolo County residents.",

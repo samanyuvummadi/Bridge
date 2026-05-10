@@ -1,4 +1,4 @@
-"""Static UI string translations for BenefitBridge.
+"""Static UI string translations for Bridge.
 
 Dynamic per-user explanations come from gemini.py. This file handles the
 predictable static strings — labels, document names, agency descriptions —
@@ -34,8 +34,8 @@ TRANSLATIONS: Dict[str, str] = {
     "low": "baja",
 
     # Common phrases
-    "BenefitBridge is a screening tool, not a benefits determination. Eligibility is confirmed through the official application process.":
-        "BenefitBridge es una herramienta de evaluación, no una determinación oficial de beneficios. Su elegibilidad se confirma al completar la solicitud oficial.",
+    "Bridge is a screening tool, not a benefits determination. Eligibility is confirmed through the official application process.":
+        "Bridge es una herramienta de evaluación, no una determinación oficial de beneficios. Su elegibilidad se confirma al completar la solicitud oficial.",
 }
 
 

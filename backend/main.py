@@ -1,4 +1,4 @@
-"""BenefitBridge FastAPI app."""
+"""Bridge FastAPI app."""
 import os
 import logging
 from concurrent.futures import ThreadPoolExecutor
@@ -22,7 +22,7 @@ from translate import translate, translate_documents
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="BenefitBridge API", version="0.1.0")
+app = FastAPI(title="Bridge API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,7 +34,7 @@ app.add_middleware(
 
 
 DISCLAIMER_EN = (
-    "BenefitBridge is a screening tool, not a benefits determination. "
+    "Bridge is a screening tool, not a benefits determination. "
     "Eligibility is confirmed through the official application process."
 )
 DISCLAIMER_ES = translate(DISCLAIMER_EN, "es")
@@ -159,7 +159,7 @@ def form_pdf(req: FormPdfRequest):
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f"attachment; filename=BenefitBridge_{safe_name}.pdf"},
+        headers={"Content-Disposition": f"attachment; filename=Bridge_{safe_name}.pdf"},
     )
 
 

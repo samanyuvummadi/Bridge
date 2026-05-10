@@ -1,4 +1,4 @@
-"""BenefitBridge eligibility rules engine.
+"""Bridge eligibility rules engine.
 
 Pure Python rules — no ML. Each program is a dict with a `check` and a `prefill`.
 The shared-fields list at the bottom is the demo moment: same data, multiple forms.

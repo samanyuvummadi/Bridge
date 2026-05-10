@@ -192,11 +192,11 @@ def generate_support_script(
     items = ", ".join(program_names[:4]) if program_names else "a few programs"
 
     fallback_en = (
-        f"Hi, I'm using BenefitBridge. I live in {city}, California. "
+        f"Hi, I'm using Bridge. I live in {city}, California. "
         f"It looks like I may qualify for {items}. Can you help me finalize my next steps?"
     )
     fallback_es = (
-        f"Hola, estoy usando BenefitBridge. Vivo en {city}, California. "
+        f"Hola, estoy usando Bridge. Vivo en {city}, California. "
         f"Parece que podría calificar para {items}. ¿Me puedes ayudar con los siguientes pasos?"
     )
     fallback = fallback_es if language == "es" else fallback_en
@@ -206,7 +206,7 @@ def generate_support_script(
         "Constraints:\n"
         "- Exactly 3 sentences.\n"
         "- Plain language, professional tone.\n"
-        "- Mention their city and that they are using BenefitBridge.\n"
+        "- Mention their city and that they are using Bridge.\n"
         "- If they are a student, include that.\n"
         "- Mention 2-3 of the matched items by name.\n"
         "- End with a direct request for help finishing the application/next steps.\n"

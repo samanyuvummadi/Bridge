@@ -13,12 +13,12 @@ def _twilio_configured() -> bool:
 def _build_message(program_name: str, renewal_date: str, language: str) -> str:
     if language == "es":
         return (
-            f"Recordatorio de BenefitBridge: tu renovación de {program_name} vence el "
+            f"Recordatorio de Bridge: tu renovación de {program_name} vence el "
             f"{renewal_date}. No la pierdas — perder beneficios para los que calificas "
             f"es común y evitable. Responde STOP para cancelar."
         )
     return (
-        f"BenefitBridge reminder: Your {program_name} renewal is due by "
+        f"Bridge reminder: Your {program_name} renewal is due by "
         f"{renewal_date}. Don't miss it — losing benefits you qualify for is common "
         f"and avoidable. Reply STOP to unsubscribe."
     )

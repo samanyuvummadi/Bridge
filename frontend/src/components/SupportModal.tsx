@@ -51,7 +51,7 @@ export default function SupportModal({
         const student = profile.is_student ? "I'm a student." : "";
         const loc = profile.city ? `I live in ${profile.city}, CA.` : "I live in California.";
         const fallback =
-          `Hi, I'm using BenefitBridge. ${student} ${loc} ` +
+          `Hi, I'm using Bridge. ${student} ${loc} ` +
           `It looks like I may qualify for ${names || "a few programs"}. Can you help me finalize my next steps?`;
         if (!cancelled) setScript(fallback);
       })
@@ -118,7 +118,7 @@ export default function SupportModal({
         </div>
 
         <div className="bb-disclaimer" style={{ marginTop: 14 }}>
-          Calls to 2-1-1 are free and confidential. BenefitBridge is not affiliated with these government agencies.
+          Calls to 2-1-1 are free and confidential. Bridge is not affiliated with these government agencies.
         </div>
       </div>
     </div>

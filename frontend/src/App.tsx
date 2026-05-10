@@ -15,7 +15,7 @@ type Tab = "find" | "my";
 
 const STRINGS = {
   en: {
-    appName: "BenefitBridge",
+    appName: "Bridge",
     tagline: "Find the benefits you've earned.",
     intake: {
       questionN: (n: number, total: number) => `Question ${n} of ${total}`,
@@ -23,7 +23,7 @@ const STRINGS = {
       next: "Next",
       findBenefits: "Find My Benefits",
       loadDemo: "Load Demo Profile (Rosa)",
-      privacyNote: "BenefitBridge does not store your personal information beyond this session. Citizenship status is used only to match programs and is never stored.",
+      privacyNote: "Bridge does not store your personal information beyond this session. Citizenship status is used only to match programs and is never stored.",
       q: {
         nameTitle: "What's your full name?",
         namePlaceholder: "First and last name",
@@ -97,16 +97,16 @@ const STRINGS = {
       applyButton: "Continue to Official Application →",
       downloadPdf: "Download PDF Summary",
       downloadFailed: "Could not download PDF",
-      disclaimer: "BenefitBridge is a screening tool, not a legal benefits determination. Your eligibility is confirmed when you complete the official application.",
+      disclaimer: "Bridge is a screening tool, not a legal benefits determination. Your eligibility is confirmed when you complete the official application.",
     },
     tabs: {
       find: "Find Benefits",
       my: "My Benefits",
     },
-    intakeError: "Couldn't reach the BenefitBridge service. Please try again.",
+    intakeError: "Couldn't reach the Bridge service. Please try again.",
   },
   es: {
-    appName: "BenefitBridge",
+    appName: "Bridge",
     tagline: "Encuentra los beneficios que te mereces.",
     intake: {
       questionN: (n: number, total: number) => `Pregunta ${n} de ${total}`,
@@ -114,7 +114,7 @@ const STRINGS = {
       next: "Siguiente",
       findBenefits: "Encontrar Mis Beneficios",
       loadDemo: "Cargar perfil de demostración (Rosa)",
-      privacyNote: "BenefitBridge no guarda tu información personal más allá de esta sesión. El estado de ciudadanía se usa solo para emparejar programas y nunca se almacena.",
+      privacyNote: "Bridge no guarda tu información personal más allá de esta sesión. El estado de ciudadanía se usa solo para emparejar programas y nunca se almacena.",
       q: {
         nameTitle: "¿Cuál es tu nombre completo?",
         namePlaceholder: "Nombre y apellido",
@@ -188,13 +188,13 @@ const STRINGS = {
       applyButton: "Continuar a la solicitud oficial →",
       downloadPdf: "Descargar PDF",
       downloadFailed: "No se pudo descargar el PDF",
-      disclaimer: "BenefitBridge es una herramienta de evaluación, no una determinación oficial. Tu elegibilidad se confirma al completar la solicitud oficial.",
+      disclaimer: "Bridge es una herramienta de evaluación, no una determinación oficial. Tu elegibilidad se confirma al completar la solicitud oficial.",
     },
     tabs: {
       find: "Encontrar",
       my: "Mis beneficios",
     },
-    intakeError: "No pudimos conectar con el servicio. Por favor intenta de nuevo.",
+    intakeError: "No pudimos conectar con el servicio de Bridge. Por favor intenta de nuevo.",
   },
 };
 

@@ -21,7 +21,7 @@ from reportlab.platypus import (
 
 
 DISCLAIMER = (
-    "BenefitBridge is a screening tool, not a legal benefits determination. "
+    "Bridge is a screening tool, not a legal benefits determination. "
     "Your eligibility is confirmed when you complete the official application."
 )
 
@@ -58,7 +58,7 @@ def generate_form_summary_pdf(program: Dict[str, Any], profile: Dict[str, Any]) 
     )
 
     story: List = []
-    story.append(Paragraph("BenefitBridge", styles["BBHeader"]))
+    story.append(Paragraph("Bridge", styles["BBHeader"]))
     story.append(Paragraph("Pre-Filled Application Summary", styles["BBBody"]))
     story.append(Spacer(1, 0.15 * inch))
 
@@ -102,7 +102,7 @@ def generate_form_summary_pdf(program: Dict[str, Any], profile: Dict[str, Any]) 
 
     story.append(Spacer(1, 0.2 * inch))
     story.append(Paragraph(
-        "This is a summary prepared by BenefitBridge. Bring this document and your "
+        "This is a summary prepared by Bridge. Bring this document and your "
         f"supporting documents to your appointment or use it to complete the "
         f"official online application at {apply_url}.",
         styles["BBSmall"],
