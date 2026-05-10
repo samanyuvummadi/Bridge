@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -X POST http://127.0.0.1:8765/api/intake -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -X POST http://127.0.0.1:8765/api/sms-reminder -H 'Content-Type: application/json' -d '{\"phone\":\"+15304441234\",\"program_name\":\"CalFresh\",\"renewal_date\":\"2026-05-10\",\"language\":\"en\"}')",
+      "Bash(curl -s -X POST http://127.0.0.1:8765/api/form-pdf -H 'Content-Type: application/json' -o /tmp/bb_test.pdf -d '{ *)",
+      "Read(//tmp/**)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"uvicorn main:app\")",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(curl -sf http://127.0.0.1:8000/api/health)",
+      "Bash(curl -sf http://127.0.0.1:8001/api/health)",
+      "Bash(curl -s http://127.0.0.1:8001/api/health)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); [print\\(m['name']+': '+m['plain_language_explanation']\\) for m in d['matched_programs'][:2]]\")",
+      "Bash(curl -s \"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyB7Q6mxPr3k9cHwaWy-w-fnXKX6JGbEvew\")"
+    ]
+  }
+}
